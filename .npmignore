@@ -11,9 +11,6 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
-# Built
-dist
-
 # dotenv environment variables file
 .env
 .env.test
