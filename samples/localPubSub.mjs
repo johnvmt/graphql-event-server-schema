@@ -1,4 +1,4 @@
-import eventExecutableSchema from "../src/exports.js";
+import eventExecutableSchema from "../dist/exports.js";
 import GraphQLHTTPWSServer from "graphql-http-ws-server";
 
 const schema = eventExecutableSchema();

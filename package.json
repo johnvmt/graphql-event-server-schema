@@ -5,6 +5,7 @@
   "repository": "https://github.com/johnvmt/graphql-event-server-schema",
   "author": "John Murphy-Teixidor <johnvmt@gmail.com>",
   "license": "MIT",
+  "type": "module",
   "private": false,
   "main": "./dist/exports.cjs",
   "module": "./dist/exports.js",

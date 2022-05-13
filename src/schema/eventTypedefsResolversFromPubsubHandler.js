@@ -1,12 +1,24 @@
-import fs from "fs";
-import path, {dirname} from "path";
-import {fileURLToPath} from "url";
 import gql from "graphql-tag";
 import { EventEmitterAsyncIterator } from "event-emitter-async-iterator";
 import GraphQLObjectOrPrimitiveType from "./types/GraphQLObjectOrPrimitiveType.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const typeDefs = gql(fs.readFileSync(path.join(__dirname, "eventSchema.schema")).toString());
+const typeDefs = gql(`scalar ObjectOrPrimitive
+    type Event {
+        channel: ID!
+        payload: ObjectOrPrimitive!
+    }
+    
+    extend type Query {
+        _placeholder: String
+    }
+    
+    extend type Mutation {
+        event(channel: ID!, payload: ObjectOrPrimitive!): Boolean!
+    }
+    
+    extend type Subscription {
+        event(channel: ID!): Event!
+    }`);
 
 /**
  * Return resolvers and typedefs from pub/sub handler

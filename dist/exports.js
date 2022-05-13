@@ -1,41 +1,5 @@
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target, mod));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/exports.js
-var exports_exports = {};
-__export(exports_exports, {
-  LocalPubSub: () => LocalPubSub_default,
-  PubSub: () => PubSub_default,
-  default: () => exports_default,
-  eventExecutableSchema: () => eventExecutableSchema_default,
-  eventTypedefsResolvers: () => eventTypedefsResolvers_default
-});
-module.exports = __toCommonJS(exports_exports);
-
-// node_modules/tsup/assets/cjs_shims.js
-var getImportMetaUrl = () => typeof document === "undefined" ? new URL("file:" + __filename).href : document.currentScript && document.currentScript.src || new URL("main.js", document.baseURI).href;
-var importMetaUrl = /* @__PURE__ */ getImportMetaUrl();
-
 // src/schema/eventExecutableSchema.js
-var import_schema = require("@graphql-tools/schema");
+import { makeExecutableSchema } from "@graphql-tools/schema";
 
 // src/utils/ExtendedError.js
 var ExtendedError = class extends Error {
@@ -58,8 +22,8 @@ var PubSub = class {
 var PubSub_default = PubSub;
 
 // src/utils/SubscriptionController.js
-var import_events = require("events");
-var SubscriptionController = class extends import_events.EventEmitter {
+import { EventEmitter } from "events";
+var SubscriptionController = class extends EventEmitter {
   constructor(options = {}) {
     super();
     this._sanitzedOptions = {
@@ -145,15 +109,12 @@ var LocalPubSub = class extends PubSub_default {
 var LocalPubSub_default = LocalPubSub;
 
 // src/schema/eventTypedefsResolversFromPubsubHandler.js
-var import_fs = __toESM(require("fs"));
-var import_path = __toESM(require("path"));
-var import_url = require("url");
-var import_graphql_tag = __toESM(require("graphql-tag"));
-var import_event_emitter_async_iterator = __toESM(require("event-emitter-async-iterator"));
+import gql from "graphql-tag";
+import { EventEmitterAsyncIterator } from "event-emitter-async-iterator";
 
 // src/schema/types/GraphQLObjectOrPrimitiveType.js
-var import_graphql = require("graphql");
-var GraphQLObjectOrPrimitiveType_default = new import_graphql.GraphQLScalarType({
+import { GraphQLScalarType, Kind } from "graphql";
+var GraphQLObjectOrPrimitiveType_default = new GraphQLScalarType({
   name: "ObjectOrPrimitive",
   description: "Object or Primitive (boolean, number, string)",
   parseValue: (value) => {
@@ -182,9 +143,9 @@ var GraphQLObjectOrPrimitiveType_default = new import_graphql.GraphQLScalarType(
   },
   parseLiteral: (ast) => {
     switch (ast.kind) {
-      case import_graphql.Kind.OBJECT:
+      case Kind.OBJECT:
         throw new Error(`Not sure what to do with OBJECT for ObjectScalarType`);
-      case import_graphql.Kind.STRING:
+      case Kind.STRING:
         try {
           return JSON.parse(ast.value);
         } catch (error) {
@@ -197,8 +158,23 @@ var GraphQLObjectOrPrimitiveType_default = new import_graphql.GraphQLScalarType(
 });
 
 // src/schema/eventTypedefsResolversFromPubsubHandler.js
-var __dirname = (0, import_path.dirname)((0, import_url.fileURLToPath)(importMetaUrl));
-var typeDefs = (0, import_graphql_tag.default)(import_fs.default.readFileSync(import_path.default.join(__dirname, "eventSchema.schema")).toString());
+var typeDefs = gql(`scalar ObjectOrPrimitive
+    type Event {
+        channel: ID!
+        payload: ObjectOrPrimitive!
+    }
+    
+    extend type Query {
+        _placeholder: String
+    }
+    
+    extend type Mutation {
+        event(channel: ID!, payload: ObjectOrPrimitive!): Boolean!
+    }
+    
+    extend type Subscription {
+        event(channel: ID!): Event!
+    }`);
 var eventTypedefsResolversFromPubsubHandler = (pubsubHandler) => {
   const resolvers = {
     ObjectOrPrimitive: GraphQLObjectOrPrimitiveType_default,
@@ -213,7 +189,7 @@ var eventTypedefsResolversFromPubsubHandler = (pubsubHandler) => {
       event: {
         subscribe: (obj, args, context, info) => {
           const { channel } = args;
-          const asyncIterator = new import_event_emitter_async_iterator.default();
+          const asyncIterator = new EventEmitterAsyncIterator();
           const subscriptionController = pubsubHandler.subscribe(channel);
           subscriptionController.subscribe((payload) => {
             asyncIterator.pushValue({
@@ -248,16 +224,16 @@ var eventTypedefsResolvers_default = eventTypedefsResolvers;
 
 // src/schema/eventExecutableSchema.js
 var eventExecutableSchema = (pubsubHandler, logger) => {
-  return (0, import_schema.makeExecutableSchema)(eventTypedefsResolvers_default(pubsubHandler, logger));
+  return makeExecutableSchema(eventTypedefsResolvers_default(pubsubHandler, logger));
 };
 var eventExecutableSchema_default = eventExecutableSchema;
 
 // src/exports.js
 var exports_default = eventExecutableSchema_default;
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  LocalPubSub,
-  PubSub,
-  eventExecutableSchema,
-  eventTypedefsResolvers
-});
+export {
+  LocalPubSub_default as LocalPubSub,
+  PubSub_default as PubSub,
+  exports_default as default,
+  eventExecutableSchema_default as eventExecutableSchema,
+  eventTypedefsResolvers_default as eventTypedefsResolvers
+};
