@@ -6,7 +6,6 @@
   "author": "John Murphy-Teixidor <johnvmt@gmail.com>",
   "license": "MIT",
   "private": false,
-  "type": "module",
   "main": "./dist/exports.cjs",
   "module": "./dist/exports.js",
   "types": "./dist/exports.d.ts",
